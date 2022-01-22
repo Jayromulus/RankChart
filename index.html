@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+  <style>
+    :root {
+      --brown: #f1b873;
+      --blue: #729bbd;
+      --gray: #545269;
+      --red: #dd6e6b;
+    }
+
+    body {
+      background-color: var(--gray);
+    }
+
+    #container {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+  <canvas id="myChart" style="width:100%"></canvas>
+  <!-- <canvas id="myChart" style="width:100%;max-width:700px"></canvas> -->
+
+  <script>
+    const players = [
+      'Kiomi',
+      'Jayromulus',
+      'Suzaku',
+      'Bart',
+      'WonderChef',
+      'Enigma',
+      'Darkari',
+      'Batax',
+      'Monkey4012',
+      'Frog',
+      'Atkins',
+      'E30',
+      'Korse',
+      'Daze',
+      'KojiKondo',
+      'Winadan',
+      'Riley',
+      'Gister',
+      'Sol',
+      'sturmisch',
+      'Emman',
+      'Kniief',
+      'Forma',
+      'Sharia',
+      'Yuuki',
+      'S3dkiller',
+      'kuokz',
+      'Tiramisu',
+      'IJgear',
+      'Masive',
+    ].sort(function (a, b) {
+      if (a.toLowerCase() < b.toLowerCase()) { return -1; }
+      if (a.toLowerCase() > b.toLowerCase()) { return 1; }
+      return 0;
+    });
+    let lib = {};
+    const url = 'https://socal-cb-server.herokuapp.com/rank';
+    const container = document.getElementById('container');
+    let current = '';
+    let myChart;
+
+    function displayPlayers() {
+      container.innerHTML = '';
+      players.forEach(player => {
+        const link = document.createElement('a');
+        link.style.fontSize = '1.25em';
+        link.style.margin = '.25em';
+        link.style.color = current === player ? '#f1b873' : '#729bbd';
+        link.innerText = player;
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          current = player;
+          displayPlayers();
+        })
+        container.appendChild(link);
+      })
+
+      myChart = current !== '' ? generateChart() : '';
+    }
+
+    displayPlayers();
+
+    function generateChart() {
+      const ctx = document.querySelector('canvas').getContext('2d');
+      return new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: lib[current].cb.length > 1 ? lib[current].cb : [lib[current].cb[0], lib[current].cb[0]],
+          datasets: [{
+            fill: false,
+            pointRadius: 1,
+            borderColor: "#dd6e6b",
+            // backgroundColor: barColors,
+            data: lib[current].score.length > 1 ? lib[current].score : [lib[current].score[0], lib[current].score[0]]
+          }]
+        },
+        options: {
+          // plugins: {
+          title: {
+            display: true,
+            text: "Score across Clan Battles",
+            // labels: {
+            fontColor: '#f1b873'
+            // }
+          },
+          legend: {
+            display: false,
+          },
+      
+          scales: {
+            xAxes: [{ 
+                gridLines: {
+                    // display: false,
+                    color: '#f1b87325'
+                },
+                ticks: {
+                  fontColor: "#f1b873", // this here
+                },
+            }],
+            yAxes: [{
+                // display: false,
+                gridLines: {
+                    // display: false,
+                    color: '#f1b87325'
+                },
+                ticks: {
+                  fontColor: '#f1b873'
+                }
+            }],
+        }
+
+        },
+      });
+    }
+
+    fetch(url).then(res => res.json()).then(json => {
+      json.playerInfo.forEach(item => {
+        lib[item.player] = {
+          score: lib[item.player] ? [item.score, ...lib[item.player].score] : [item.score],
+          cb: lib[item.player] ? [`${item.month} ${item.year}`, ...lib[item.player].cb] : [`${item.month} ${item.year}`]
+        }
+      })
+
+      console.log(lib);
+
+    }).catch(e => console.log(e))
+  </script>
+</body>
+
+</html>
+
+<!-- https://www.w3schools.com/ai/ai_chartjs.asp -->
+<!-- https://www.chartjs.org/docs/3.1.0/configuration/legend.html -->
