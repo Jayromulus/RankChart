@@ -98,6 +98,7 @@
 
     function generateChart() {
       const ctx = document.querySelector('canvas').getContext('2d');
+      ctx.innerHTML = '';
       return new Chart(ctx, {
         type: "line",
         data: {
